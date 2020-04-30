@@ -15,18 +15,35 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Information & data
 
 
-- You can find the information and the data at 
+-You can find the information and the data at 
 
 
 *poincare.met.fu-berlin.de: /home/otero/Lab_extremes/* 
 
-* data
-* Instructions (Lab_April_2020.pdf)
-* scripts
+ * data
+ * Instructions (Lab_April_2020.pdf)
+ * scripts
 
--We will use Rstudio (or alternatively R with some graphical interface, e.g. X11).
+
+-Alternatively you can find the data:
+*https://github.com/noeliaof/Lab_extremes*
+
+-We will use Rstudio (or R with some graphical interface, e.g. X11).
 *https://rstudio.com/products/rstudio/download/*
 
+## Before starting, some Rstudio notes
+
+-During the exercise we will use the following packages:
+
+  * MASS
+  * stats
+  * ggplot2
+  * dplyr
+  * relaimpo
+
+-To install the packages:
+
+*install.packages("name")*
 
 ## Introduction {.smaller}
 
@@ -54,12 +71,13 @@ Key questions:
 
 ## Getting started
 
-```{r load myata, include=FALSE}
+```{r load myata, echo=T}
 load("data/data_year_o3.Rda")
-summary(data_o3)
-```
-```{r mydata, echo = TRUE}
 head(data_o3)
+```
+## Getting started {.smaller}
+```{r mydata, echo = TRUE}
+summary(data_o3)
 ```
 ## Visualisation
 ```{r message=FALSE, warning=FALSE}
@@ -74,17 +92,34 @@ p4 <- ggplot2::ggplot(data_o3, aes(x=rh, y=o3))+ geom_point(color="blue", alpha=
 plot_grid(p1,p2,p3,p4, ncol=2)
 ```
 
-## Visualisation-Seasonal cycle
-```{r message=FALSE, warning=FALSE}
+## Visualisation-Seasonal cycle{.smaller}
+
+- Ozone season usually ranges from April to September. 
+- Here, we will split the data into seasons to visualise the effect of the seasonal cycle. 
+- Then, we will restrict the analysis to spring and summer.
+
+```{r message=FALSE, warning=FALSE, echo=T}
 library(dplyr)
-data_o3%>%
-  mutate(season=ifelse( format(date, "%m")>="01" & format(date, "%m") <="02" |format(date, "%m")=="12", "DJF",
+data_o3 <- data_o3%>%
+    mutate(season=ifelse( format(date, "%m")>="01" & format(date, "%m") <="02" |format(date, "%m")=="12", "DJF",
                        ifelse( format(date, "%m")>="03" &  format(date, "%m")<="05", "MAM",
                               ifelse( format(date, "%m")>="06" &  format(date, "%m")<="08", "JJA",
-                                      ifelse(format(date, "%m")>="09" &  format(date, "%m")<="11","SON",NA)))))%>%
-  ggplot2::ggplot(aes(x=date, y=o3, color=season)) + 
+                                      ifelse(format(date, "%m")>="09" &  format(date, "%m")<="11","SON",NA)))))
+
+```
+## Visualisation-Seasonal cycle{.smaller}
+```{r message=FALSE, warning=FALSE, echo=T}
+
+ggplot2::ggplot(data_o3, aes(x=date, y=o3, color=season)) + 
       geom_point() +
       scale_x_date(date_breaks = "3 years", date_labels = "%Y-%m") + facet_wrap(~season, ncol=2)
+```
+
+## Visualisation-Seasonal cycle{.smaller}
+```{r message=FALSE, warning=FALSE, echo=T}
+ggplot2::ggplot(data_o3, aes(x=format(date,"%Y"), y=o3, fill=season)) + 
+  scale_x_discrete(breaks=seq(2000,2010,3))+ xlab("year")+
+      geom_boxplot() + facet_wrap(~season, ncol=2)
 ```
 
 ## Visualisation-Correlations
@@ -92,7 +127,7 @@ data_o3%>%
 library(ggplot2)
 library(psych)
 
-pairs.panels(data_o3[,-1], 
+pairs.panels(data_o3[,-c(1,10)], 
               method = "pearson", # correlation method
               hist.col = "#00AFBB",
               density = TRUE,  # show density plots
@@ -245,3 +280,10 @@ We have used regression analysis to examine ozone variability and the influence 
 * What are the main differences between spring and summer?
 * When the number of exceedances is greater?
 
+## References{.smaller}
+
+- Statistical Methods in the Atmospheric Sciences, Daniel Wilks
+
+- Otero, N., Sillmann, J., Schnell, J. L., Rust, H. W., and Butler, T.: Synoptic and meteorological drivers of extreme ozone concentrations over Europe, Environmental Research Letters, 11, 24 005, doi:10.1088/1748-9326/11/2/024005
+
+- Camalier L, Cox W and Dolwick P 2007 The effects of meteorology on ozone in urban areas and their use in assessing ozone trends Atmos. Environ. 41 7127–37
