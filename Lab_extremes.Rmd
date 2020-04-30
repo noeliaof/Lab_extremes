@@ -49,7 +49,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 - The main sources of near-surface O3 pollution include both natural and man-made emissions of volatile organic compounds (VOCs) and nitrogen oxides (NOx). Under ultraviolet radiation, they go through a series of photochemical reactions and produce O3.
 
-- Surface ozone concentrations are strongly depen- dent on meteorological variables, such as solar radiation fluxes, temperature, cloudiness, or wind speed/direction.
+- Surface ozone concentrations are strongly dependent on meteorological variables, such as solar radiation fluxes, temperature, cloudiness, or wind speed/direction.
 
 - Major episodes of high concentrations of ozone are associated with slow-moving, high-pressure weather systems that usually bring high temperatures and stagant conditions. Therefore, O3 variability is also controlled by meteorological factors.
 
@@ -59,7 +59,7 @@ The exercise is divided is two main parts as follows:
 
 Exercise:
 
-1. Data analysis: Examination visualisation (time series, scatter plots, boxplots, histograms..)
+1. Data analysis: Examination and visualisation (time series, scatter plots, boxplots, histograms..)
 2. Regression analysis to assess the ozone variability and the impacts of the different meteorological variables.
 
 Key questions:
@@ -284,6 +284,6 @@ We have used regression analysis to examine ozone variability and the influence 
 
 - Statistical Methods in the Atmospheric Sciences, Daniel Wilks
 
-- Otero, N., Sillmann, J., Schnell, J. L., Rust, H. W., and Butler, T.: Synoptic and meteorological drivers of extreme ozone concentrations over Europe, Environmental Research Letters, 11, 24 005, doi:10.1088/1748-9326/11/2/024005
+- Otero, N., Sillmann, J., Schnell, J. L., Rust, H. W., and Butler, T.: Synoptic and meteorological drivers of extreme ozone concentrations over Europe, Environmental Research Letters, 11, 24 005, doi:10.1088/1748-9326/11/2/024005 (ref. therein)
 
-- Camalier L, Cox W and Dolwick P 2007 The effects of meteorology on ozone in urban areas and their use in assessing ozone trends Atmos. Environ. 41 7127–37
+- Camalier L, Cox W and Dolwick P 2007 The effects of meteorology on ozone in urban areas and their use in assessing ozone trends Atmos. Environ. 41 7127–37 (ref. therein)
