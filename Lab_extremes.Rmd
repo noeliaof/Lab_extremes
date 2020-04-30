@@ -1,0 +1,247 @@
+---
+title: "Lecture: Extrema der Luftschadstoffe Ozonextrema"
+author: "Noelia Otero"
+email: "Noelia.OteroFelipe@iass-potsdam.de"
+date: "April-2020"
+widescreen: true
+smaller: true
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Information & data
+
+
+- You can find the information and the data at 
+
+
+*poincare.met.fu-berlin.de: /home/otero/Lab_extremes/* 
+
+* data
+* Instructions (Lab_April_2020.pdf)
+* scripts
+
+-We will use Rstudio (or alternatively R with some graphical interface, e.g. X11).
+*https://rstudio.com/products/rstudio/download/*
+
+
+## Introduction {.smaller}
+
+- The main sources of near-surface O3 pollution include both natural and man-made emissions of volatile organic compounds (VOCs) and nitrogen oxides (NOx). Under ultraviolet radiation, they go through a series of photochemical reactions and produce O3.
+
+- Surface ozone concentrations are strongly depen- dent on meteorological variables, such as solar radiation fluxes, temperature, cloudiness, or wind speed/direction.
+
+- Major episodes of high concentrations of ozone are associated with slow-moving, high-pressure weather systems that usually bring high temperatures and stagant conditions. Therefore, O3 variability is also controlled by meteorological factors.
+
+## Objective {.smaller}
+
+The exercise is divided is two main parts as follows:
+
+Exercise:
+
+1. Data analysis: Examination visualisation (time series, scatter plots, boxplots, histograms..)
+2. Regression analysis to assess the ozone variability and the impacts of the different meteorological variables.
+
+Key questions:
+
+- How is the relationship O3 and the meteorological variables? 
+- Which is the most significant predictor?
+- Which is the best model?
+- What are the main seasonal differences?
+
+## Getting started
+
+```{r load myata, include=FALSE}
+load("data/data_year_o3.Rda")
+summary(data_o3)
+```
+```{r mydata, echo = TRUE}
+head(data_o3)
+```
+## Visualisation
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+library(cowplot)
+p1 <- ggplot2::ggplot(data_o3, aes(x=date, y=o3, group=1)) + 
+      geom_line(color="red") +
+      scale_x_date(date_breaks = "2 years", date_labels = "%Y-%m")
+p2 <- ggplot2::ggplot(data_o3, aes(x=o3))+ geom_histogram(binwidth = 10, color="grey", alpha=0.8) + ggtitle("Histogram")
+p3 <- ggplot2::ggplot(data_o3, aes(x=tmax, y=o3))+ geom_point(color="blue", alpha=0.5) + stat_smooth(method = "lm", color="red") + xlab("Tx")
+p4 <- ggplot2::ggplot(data_o3, aes(x=rh, y=o3))+ geom_point(color="blue", alpha=0.5) + stat_smooth(method = "lm", color="red") + xlab("RH")
+plot_grid(p1,p2,p3,p4, ncol=2)
+```
+
+## Visualisation-Seasonal cycle
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+data_o3%>%
+  mutate(season=ifelse( format(date, "%m")>="01" & format(date, "%m") <="02" |format(date, "%m")=="12", "DJF",
+                       ifelse( format(date, "%m")>="03" &  format(date, "%m")<="05", "MAM",
+                              ifelse( format(date, "%m")>="06" &  format(date, "%m")<="08", "JJA",
+                                      ifelse(format(date, "%m")>="09" &  format(date, "%m")<="11","SON",NA)))))%>%
+  ggplot2::ggplot(aes(x=date, y=o3, color=season)) + 
+      geom_point() +
+      scale_x_date(date_breaks = "3 years", date_labels = "%Y-%m") + facet_wrap(~season, ncol=2)
+```
+
+## Visualisation-Correlations
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
+library(ggplot2)
+library(psych)
+
+pairs.panels(data_o3[,-1], 
+              method = "pearson", # correlation method
+              hist.col = "#00AFBB",
+              density = TRUE,  # show density plots
+              )
+
+```
+
+## Regression analysis{.smaller}
+
+The simple linear model can be written as:
+$$\hat{y} = a + \beta x$$
+where a is the intercept and $\beta$ is the slope.
+
+Let's start modelling the relationship between ozone and the meteorological variables.
+Since the ozone season usually ranges between April and September, we will focus on spring and summer.
+```{r echo=T}
+m1  <- lm(o3~tmax,data=data_o3,na.action=na.omit)
+```
+```{r}
+summary(m1)
+```
+
+## Multiple regression analysis{.smaller}
+
+Now, we can fit a new model by adding more variables. 
+We are interesting in building a model that better explain the O3 variabily. Then, we need to examine which variables give us the best model. 
+Ultimately, we want to see which variable is the main "driver" (i.e. explaining the larger proportion of O3 variability)
+```{r echo=FALSE}
+data_jja  <- subset(data_o3, format(date,"%m")>="06" & format(date, "%m")<="08")
+```
+```{r echo=T}
+m2  <- lm(o3~tmax+rh,data=data_jja,na.action=na.omit)
+```
+summary(m2) # see the summary of the model
+```{r echo=T}
+m3  <- lm(o3~tmax+rh+ssrd,data=data_jja,na.action=na.omit)
+```
+summary(m3) # see the summary of the model
+
+## Multiple regression analysis{.smaller}
+Fit a full model:
+
+```{r echo=T}
+mfull  <- lm(o3~tmax+rh+ssrd+tcc+ws+Direction,data=data_jja,na.action=na.omit)
+summary(mfull)
+```
+
+## Multiple regression analysis-model check{.smaller}
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+plot(mfull)
+```
+
+## Model selection - Stepwise regression
+
+The stepwise regression (or stepwise selection) consists of iteratively adding and removing predictors, in the predictive model, in order to find the subset of variables in the data set resulting in the best performing model, that is a model that lowers prediction error.
+
+In R, stepAIC() (MASS package), choose the best model by AIC(Akaike Information Criterion (AIC). It has an option named direction, which can take the following values: i) “both” (for stepwise regression, both forward and backward selection); “backward” (for backward selection) and “forward” (for forward selection). It return the best final model.
+
+$$AIC= 2K -2logLik $$
+where loglik is the log-likelihood (how well the model fits the data) and K is the number of the parameters.
+
+## Stepwise regression{.smaller}
+
+```{r message=FALSE, warning=FALSE}
+library(MASS)
+```
+
+```{r echo=T}
+m.null <- lm(o3~1, data=data_jja)
+m.f  <- stepAIC(m.null, direction="forward", scope=list(lower=m.null, upper=mfull))
+```
+
+## Setpwise regression
+```{r echo=T}
+m.b  <- stepAIC(mfull, direction="backward")
+```
+
+## Variable importance{.smaller}
+
+We want to identify which predictor has a large contribution to the total explained deviance.
+We can now calculate the relative importance of each predictor. 
+```{r message=FALSE, warning=FALSE, echo=T}
+library(relaimpo)
+relImportance <- calc.relimp(m.f, type="lmg")
+```
+
+```{r echo=F}
+df.rimpo <- data.frame("rimpo"=sort(round(relImportance$lmg, 3), decreasing=TRUE))
+df.rimpo$variable <- rownames(df.rimpo)
+```
+
+```{r message=FALSE, warning=FALSE, echo=T, fig.width=4.5, fig.height=3}
+# plots
+ggplot2::ggplot(df.rimpo, aes(x=variable, y=rimpo))+ geom_bar(stat = "identity") 
+
+```
+
+## Ozone exceedances {.smaller}
+```{r echo=F}
+#Convert the outcome(o3) into binary data:
+ths <- 50
+data_jja$o3_50 <- ifelse(data_jja$o3>ths,1,0)
+data_jja$o3_50   <- ifelse(data_jja$o3>=ths, "orange", "forestgreen")
+```
+
+```{r echo=T}
+plot(o3~date, data=data_jja, type="h", col=o3_50)
+abline(h=ths, lty=2, col="red")
+```
+
+## Ozone exceedances-Logistic regression {.smaller}
+We use logistic regression (LR) to model the probability of ozone exceedances over a threshold. 
+Occurrences of threshold exceedance can take values of 0 (not exceeded) or 1 (exceeded), so the associated distribution for probabilities of these exceedances is the binomial distribution.
+
+In R, it can be done with GLM and it is similar than the MLR case, but with another distribution.
+```{r echo=F}
+data_jja$o3 <- as.factor(data_jja$o3)
+```
+
+```{r echo=T}
+fitglm_tx <- glm(o3~tmax,data=data_jja,family="binomial")
+exp(coef(fitglm_tx))
+summary(fitglm_tx)
+```
+## Ozone exceedances-Multiple Logistic regression {.smaller}
+
+We can add more predictors:
+
+```{r echo=T}
+fitglm <- glm(o3~tmax+rh+ssrd+blh+Direction+ws,data=data_jja,family="binomial")
+```
+summary(fitglm)
+
+You can now also apply model selection:
+
+-modelglm <- stepAIC(fitglm,direction="both")
+
+and get the predictions:
+
+-pred  <- predict(modelglm,type="response") 
+
+
+## key-questions
+
+We have used regression analysis to examine ozone variability and the influence of meteorological variables.
+
+* Which model fits better?
+* What are the main meteorological drivers of ozone?
+* What are the main differences between spring and summer?
+* When the number of exceedances is greater?
+
