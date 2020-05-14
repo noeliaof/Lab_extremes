@@ -60,6 +60,15 @@ pairs(mydata[,c(3:9,2)], cex.labels =0.9,
       lower.panel=panel.smooth, upper.panel=panel.cor,diag.panel=panel.hist)
 
 
+# We can create a season column
+mydata <- mydata%>%mutate(season=ifelse(mon>="01" & mon<="02" | mon=="12", "DJF",
+                                        ifelse(mon>="03" & mon<="05", "MAM",
+                                               ifelse(mon>="06" & mon<="08", "JJA",
+                                                      ifelse(mon>="09" & mon<="11", "SON",NA)))))
+# Another way to plot correlations
+require(ggcorrplot)
+corr <- round(cor(mydata[,c(3:9,2)]), 3)
+ggcorrplot(corr)
 
 
 ##################################
@@ -68,14 +77,11 @@ pairs(mydata[,c(3:9,2)], cex.labels =0.9,
 # 2. Daily cycle
 #################################
 
-# We can create a season column
-mydata <- mydata%>%mutate(season=ifelse(mon>="01" & mon<="02" | mon=="12", "DJF",
-                                  ifelse(mon>="03" & mon<="05", "MAM",
-                                        ifelse(mon>="06" & mon<="08", "JJA",
-                                               ifelse(mon>="09" & mon<="11", "SON",NA)))))
+
 # We plot each season 
 # create a subset for each season and visualise
 data_jja <- subset(mydata, season=="JJA")
+data_mam <- subset(mydata, season=="MAM")
 plot(data_jja$o3,type="l",col="orange",xlab="days",ylab="MDA8 O3 (ppb)",main="MDA8 O3")
 # It can be done for each season
 # We can use ggplot and facet seasons
@@ -103,6 +109,8 @@ ggplot2::ggplot(mydata, aes(x=mon, y=tmax))+ geom_boxplot(fill="blue")
 #null model
 # Remove the last column to avoid problems 
 data_jja$season <- NULL
+data_mam$season <- NULL
+#
 m0  <- lm(o3~.,data=data_jja,na.action=na.omit)
 
 #linear regression
@@ -205,17 +213,25 @@ summary(model)
 #Plot the model
 plot(model)
 
+# for spring repeat the same steps:
+fit_mam   <- lm(form, data=data_mam,na.action=na.omit)
+model_mam <- stepAIC(fit_mam,direction="both")
+summary(model_mam)
 #######################
 # Variable importance
 #######################
 require(relaimpo)
 # calculate relative importance
 relImportance <- calc.relimp(model, type = "lmg", rela = F)  
+relImportance_mam <- calc.relimp(model_mam, type = "lmg", rela = F)  
 
 # Sort
 cat('Relative Importances: \n')
-df.rimpo <- data.frame("rimpo"=sort(round(relImportance$lmg, 3), decreasing=TRUE))
+df.rimpo <- data.frame("jja"=sort(round(relImportance$lmg, 3), decreasing=TRUE))
 df.rimpo$variable <- rownames(df.rimpo)
+# for mam
+df.rimpo.mam <- data.frame("mam"=sort(round(relImportance_mam$lmg, 3), decreasing=TRUE))
+df.rimpo.mam$variable <- rownames(df.rimpo.mam)
 # plots
 ggplot2::ggplot(df.rimpo, aes(x=variable, y=rimpo))+ geom_bar(stat = "identity") 
 
@@ -255,4 +271,11 @@ newdata <- data_jja
 newdata$pred.o50 <- fitglm$fitted.values
 
 pred  <- predict(modelglm,type="response") # gives us the probability
+
+
+# For variable importance
+require(caret)
+
+varImp(modelglm, scale=T)
+
 

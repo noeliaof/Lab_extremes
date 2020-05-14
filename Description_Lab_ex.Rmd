@@ -1,0 +1,57 @@
+---
+title: "Extrema der Luftschadstoffe Ozonextrema"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Outline
+
+This exercise consists in a case of study of observed maximum daily 8-h of ozone (MDA8 O3) in three different locations over Germany. Along with the observational data set, simulations from a regional model (LOTOS-EUROS) will be used to assess the ability of the model to reproduce the observed relationship between O3 and meteorological conditions. Furthermore, the meteorological sensitivities of high/extremes levels of MDA8 O3 will be examined.
+
+key-questions:
+
+1. Regional model (LOTOS): Is the model able to capture the main features of MDA8 O3? how is the meteorology reproduced by the model? Is there any significant difference between seasons?
+
+2. What are the most important variables of MDA8 O3? 
+Differences between observations and model: is the modeled data close to the observed meteorological sensitivities of MDA8 O3?
+
+3. Extremes: Is the model able to reproduce the extremes of MDA8 O3? and the sensitivities to extremes?
+
+# Data
+
+* Observations:
+The MDA8 O3 data is extracted from a gridded data set obtained from observations (see Otero et al. 2016) and corresponds to three different locations. A total of seven meteorological variables are obtained from the ERA Interim reanalysis: maximum temperature(tmax), boundary layer height(blh), total cloud cover(tcc), sea level pressure(msl), relative humidity (rh), surface solar radiation (ssrd), wind speed (ws), wind direction (Direction).
+
+* Model:
+Model simulations are extracted from the air quality model LOTOS-EUROS and the respective meteorological fields from the RACMO2 (which is the meteorological input used). See more details in Otero el al. 2018.
+
+The data expands 11 years 2000-2010 (January-December) and as mentioned they are daily data.
+
+Note: the data provided is (.Rda) a list of three elements, one for each location: data_loc[loc1],data_loc[loc2],data_loc[loc3]. For each location there are two data.frame (obs, and loto).
+The locations correspond to the following coordinates (longitude, latitude):
+*loc1= c(8,49), loc2=c(10,50), loc3=c(13,52)
+
+# Procedure
+
+The following steps can be applied for each location.
+
+1. Analyse the data (observations and simulations). Split the data into seasons, since there is a strong seasonal component (ozone season usually is defined from April-September). Consider to use only spring (MAM) and summer (JJA) for the regression.
+
+2. Assess the simulations (e.g. correlations between observations and model simulations for both ozone and meteorology).
+
+3. Apply MLR regression analysis to identify the most important predictors ( recommendations: fit a model for each season )
+
+4. Apply GLM for the extremes. Select a threshold to define ozone exceedances (e.g. 50 or 60 ppb, which are based on the target values). 
+
+# References
+
+Otero, N., Sillmann, J., Schnell, J.L., Rust, H.W., Butler, T., 2016. Synoptic and meteorological drivers of extreme ozone concentrations over Europe. Environ. Res. Lett. 11 (2).
+
+Otero, N., et al.: A multi-model comparison of meteorological drivers of surface ozone over Europe, Atmos. Chem. Phys., 18, 12269–12288, https://doi.org/10.5194/acp-18-12269-2018, 2018.
+
+Fix, M. J., Cooley, D., Hodzic, A., Gilleland, E., Russell, B.T., Porter, W. C., and Pfister, G. G.: Observed and predicted sensitivities of extreme surface ozone to meteorological drivers in three US cities, Atmos. Environ., 176, 292–300,https://doi.org/10.1016/j.atmosenv.2017.12.036, 2018
